@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, abort
-from models.ServerUsage import ServerUsage
 import datetime
 import services.server_usage as server_usage_service
 import services.analytics as analytics_service
@@ -25,6 +24,7 @@ def analytics():
     server_name = request.args.get('server_name')
     start_datetime = request.args.get('start_datetime')
     end_datetime = request.args.get('end_datetime') or datetime.datetime.utcnow()
+    split_by = request.args.get('split_by')
 
     if (server_name is None and start_datetime is None):
         abort(400, 'Please set server name or start datetime as a query param')
@@ -32,8 +32,8 @@ def analytics():
         try:
             query_response = analytics_service.get_query_data(server_name, start_datetime, end_datetime)
 
-            response_data = analytics_service.create_response_data(server_name, start_datetime, end_datetime,
-                                                                   query_response)
+            response_data = analytics_service.get_response_data(server_name, start_datetime, end_datetime,
+                                                                query_response, split_by)
             return jsonify(response_data)
         except Exception as e:
             return jsonify(error=str(e))
